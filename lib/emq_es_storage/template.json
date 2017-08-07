@@ -1,0 +1,29 @@
+{
+  "order": 0,
+  "template": "chat-*",
+  "settings": {
+    "index": {
+      "number_of_replicas": "3"
+    }
+  },
+  "mappings": {
+    "message": {
+      "properties": {
+        "payload": {
+          "index": "not_analyzed",
+          "type": "string"
+        },
+        "topic": {
+          "index": "not_analyzed",
+          "type": "string"
+        },
+        "timestamp": {
+          "format": "strict_date_optional_time||epoch_millis",
+          "type": "date",
+          "null_value": "now"
+        }
+      }
+    }
+  },
+  "aliases": {}
+}
