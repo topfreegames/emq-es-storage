@@ -50,12 +50,10 @@ defmodule EmqEsStorage.Body do
   end
 
   def get_topics do
-    result = command(["SMEMBERS", "emqtt-topic-filter"])
-    Cachex.set(:topic_cache, "emqtt-topic-filter", "asdasd")
-    # {:loaded, result} = Cachex.get(:topic_cache, "emqtt-topic-filter", fallback: fn(_key) ->
-      # command(["SMEMBERS", "emqtt-topic-filter"])
-    # end)
-    result
+    {_, topics} = Cachex.get(:topic_cache, "emqtt-topic-filter", fallback: fn(_key) ->
+      command(["SMEMBERS", "emqtt-topic-filter"])
+    end)
+    topics
   end
 
   def match_topic?(topic) do

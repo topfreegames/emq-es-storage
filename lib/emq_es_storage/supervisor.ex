@@ -1,5 +1,4 @@
 defmodule EmqEsStorage.Supervisor do
-  # Automatically imports Supervisor.Spec
   use Supervisor
 
   def start_link do

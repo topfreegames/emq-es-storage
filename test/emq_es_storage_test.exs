@@ -5,10 +5,15 @@ defmodule EmqEsStorageTest do
   require EmqEsStorage.Redis
 
   setup_all do
+    {:ok, _} = Cachex.Application.start(nil, nil)
     :emqttd_hooks.start_link()
-    Cachex.Application.start(nil, nil)
     {:ok, _} = EmqEsStorage.start(nil, nil)
     Tirexs.HTTP.put("/chat-#{Date.utc_today}")
+    :ok
+  end
+
+  setup do
+    Cachex.clear(:topic_cache)
     EmqEsStorage.Redis.command(
       ["sadd", "emqtt-topic-filter", "chat/+/room/+"]
     )
@@ -51,6 +56,36 @@ defmodule EmqEsStorageTest do
 
   test "when topic from not matched topic, shoud not store on ES" do
     message = get_message("not/matched_topic")
+    EmqEsStorage.Body.on_message_publish(message, [])
+
+    refresh_index()
+
+    {:ok, 200, result} = Tirexs.HTTP.get(
+      "/chat-*/_search?q=payload:#{message.payload}"
+    )
+
+    assert result.hits.total == 0
+  end
+
+  test "when topic list cached" do
+    topic = "now/matched/+"
+    Cachex.set!(:topic_cache, "emqtt-topic-filter", [topic])
+    message = get_message("now/matched/topic")
+    EmqEsStorage.Body.on_message_publish(message, [])
+
+    refresh_index()
+
+    {:ok, 200, result} = Tirexs.HTTP.get(
+      "/chat-*/_search?q=payload:#{message.payload}"
+    )
+
+    assert result.hits.total == 1
+  end
+
+  test "when topic list is empty" do
+    topic = "not/matched/+"
+    message = get_message(topic)
+    EmqEsStorage.Redis.command(["DEL", "emqtt-topic-filter"])
     EmqEsStorage.Body.on_message_publish(message, [])
 
     refresh_index()
