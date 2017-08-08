@@ -8,10 +8,10 @@ defmodule EmqEsStorage.Supervisor do
   end
 
   def init(children) do
-    host = System.get_env("REDIS_AUTH_REDIS_HOST") || "localhost"
-    port = String.to_integer(System.get_env("REDIS_AUTH_REDIS_PORT") || "6379")
-    password = System.get_env("REDIS_AUTH_REDIS_PASSWORD") || nil
-    pool_size = String.to_integer(System.get_env("REDIS_AUTH_REDIS_POOL_SIZE") || "5")
+    host = System.get_env("REDIS_HOST") || "localhost"
+    port = String.to_integer(System.get_env("REDIS_PORT") || "6379")
+    password = System.get_env("REDIS_PASSWORD") || nil
+    pool_size = String.to_integer(System.get_env("REDIS_POOL_SIZE") || "5")
     workers = for i <- 0..(pool_size - 1) do
       worker(Redix, [
         [host: host, port: port, password: password],
