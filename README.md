@@ -1,4 +1,4 @@
-# emq-es-storage
+# emq-es-storage [![Build Status](https://travis-ci.org/topfreegames/emq-es-storage.svg?branch=master)](https://travis-ci.org/topfreegames/emq-es-storage)
 
 Stores matched topics messages on elasticsearch.
 
