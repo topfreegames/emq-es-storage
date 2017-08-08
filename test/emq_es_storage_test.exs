@@ -1,6 +1,6 @@
 defmodule EmqEsStorageTest do
   use ExUnit.Case
-  require EmqEsStorage.MqttMessage
+  require EmqEsStorage.Shared
   require Tirexs.HTTP
   require EmqEsStorage.Redis
 
@@ -21,10 +21,14 @@ defmodule EmqEsStorageTest do
   end
 
   def get_message(topic) do
-    %EmqEsStorage.MqttMessage{
+    EmqEsStorage.Shared.mqtt_message(
       topic: topic,
       payload: UUID.uuid4()
-    }
+    )
+  end
+
+  def get_payload(record) do
+    EmqEsStorage.Shared.mqtt_message(record, :payload)
   end
 
   def refresh_index, do: Tirexs.HTTP.post!("/chat-*/_refresh")
@@ -36,7 +40,7 @@ defmodule EmqEsStorageTest do
     refresh_index()
 
     {:ok, 200, result} = Tirexs.HTTP.get(
-      "/chat-*/_search?q=payload:#{sys_message.payload}"
+      "/chat-*/_search?q=payload:#{get_payload(sys_message)}"
     )
     assert result.hits.total == 0
   end
@@ -48,7 +52,7 @@ defmodule EmqEsStorageTest do
     refresh_index()
 
     {:ok, 200, result} = Tirexs.HTTP.get(
-      "/chat-*/_search?q=payload:#{message.payload}"
+      "/chat-*/_search?q=payload:#{get_payload(message)}"
     )
 
     assert result.hits.total == 1
@@ -61,7 +65,7 @@ defmodule EmqEsStorageTest do
     refresh_index()
 
     {:ok, 200, result} = Tirexs.HTTP.get(
-      "/chat-*/_search?q=payload:#{message.payload}"
+      "/chat-*/_search?q=payload:#{get_payload(message)}"
     )
 
     assert result.hits.total == 0
@@ -76,7 +80,7 @@ defmodule EmqEsStorageTest do
     refresh_index()
 
     {:ok, 200, result} = Tirexs.HTTP.get(
-      "/chat-*/_search?q=payload:#{message.payload}"
+      "/chat-*/_search?q=payload:#{get_payload(message)}"
     )
 
     assert result.hits.total == 1
@@ -91,7 +95,7 @@ defmodule EmqEsStorageTest do
     refresh_index()
 
     {:ok, 200, result} = Tirexs.HTTP.get(
-      "/chat-*/_search?q=payload:#{message.payload}"
+      "/chat-*/_search?q=payload:#{get_payload(message)}"
     )
 
     assert result.hits.total == 0

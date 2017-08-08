@@ -1,6 +1,6 @@
 defmodule EmqEsStorage.Body do
   require Logger
-  require EmqEsStorage.MqttMessage
+  require EmqEsStorage.Shared
   import EmqEsStorage.Redis
   import Tirexs.HTTP
 
@@ -38,15 +38,23 @@ defmodule EmqEsStorage.Body do
     "/chat-#{Date.utc_today}"
   end
 
-  def on_message_publish(message = %EmqEsStorage.MqttMessage{topic: <<"$SYS/">> <> _ }, _env), do: {:ok, message}
+  def process_message(message, "$SYS/" <> _, _), do: {:ok, message}
 
-  def on_message_publish(message = %EmqEsStorage.MqttMessage{}, _env) do
-    case match_topic?(message.topic) do
+  def process_message(message, topic, payload) do
+    case match_topic?(topic) do
       true ->
-        store_on_es(message)
+        store_on_es(topic, payload)
         {:ok, message}
       false -> {:ok, message}
     end
+  end
+
+  def on_message_publish(message, _env) do
+    process_message(
+      message,
+      EmqEsStorage.Shared.mqtt_message(message, :topic),
+      EmqEsStorage.Shared.mqtt_message(message, :payload)
+    )
   end
 
   def get_topics do
@@ -70,10 +78,10 @@ defmodule EmqEsStorage.Body do
     |> Regex.compile!
   end
 
-  def store_on_es(message) do
+  def store_on_es(topic, payload) do
     post!(
       "#{get_index_chat()}/message",
-      [topic: message.topic, payload: message.payload]
+      [topic: topic, payload: payload]
     )
   end
 end
