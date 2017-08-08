@@ -10,11 +10,9 @@
     "message": {
       "properties": {
         "payload": {
-          "index": "not_analyzed",
           "type": "keyword"
         },
         "topic": {
-          "index": "not_analyzed",
           "type": "keyword"
         },
         "timestamp": {
