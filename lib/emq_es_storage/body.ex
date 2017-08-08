@@ -59,7 +59,11 @@ defmodule EmqEsStorage.Body do
 
   def get_topics do
     {_, topics} = Cachex.get(:topic_cache, "emqtt-topic-filter", fallback: fn(_key) ->
-      command(["SMEMBERS", "emqtt-topic-filter"])
+      result = command(["SMEMBERS", "emqtt-topic-filter"])
+      Logger.info fn ->
+        "[emq_es_storage] Updating matched topics: #{result}"
+      end
+      result
     end)
     topics
   end
@@ -81,7 +85,7 @@ defmodule EmqEsStorage.Body do
   def store_on_es(topic, payload) do
     post!(
       "#{get_index_chat()}/message",
-      [topic: topic, payload: payload]
+      [topic: topic, payload: payload, timestamp: DateTime.utc_now |> DateTime.to_iso8601]
     )
   end
 end
