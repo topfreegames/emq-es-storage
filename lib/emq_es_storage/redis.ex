@@ -1,6 +1,6 @@
 defmodule EmqEsStorage.Redis do
   def command(command) do
-    {:ok, result} = Redix.command(:"redix_#{random_index()}", command)
+    {:ok, result} = Redix.command(:"emq_es_storage_redix_#{random_index()}", command)
     result
   end
 

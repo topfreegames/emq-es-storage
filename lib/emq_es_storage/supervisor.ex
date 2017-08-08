@@ -15,8 +15,8 @@ defmodule EmqEsStorage.Supervisor do
     workers = for i <- 0..(pool_size - 1) do
       worker(Redix, [
         [host: host, port: port, password: password],
-        [name: :"redix_#{i}"]
-      ], id: {Redix, i})
+        [name: :"emq_es_storage_redix_#{i}"]
+      ], id: {:es_storage_redix, i})
     end
     supervise(workers ++ children, strategy: :one_for_one)
   end
