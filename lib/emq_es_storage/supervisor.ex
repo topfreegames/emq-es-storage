@@ -1,6 +1,7 @@
 defmodule EmqEsStorage.Supervisor do
   use Supervisor
   require HTTPoison
+  require Honeydew
 
   def start_link do
     Supervisor.start_link(__MODULE__, [
@@ -30,6 +31,17 @@ defmodule EmqEsStorage.Supervisor do
     # :ok = :hackney_pool.start_pool(:es_pool, [timeout: 15000, max_connections: 100])
     HTTPoison.start()
 
-    supervise(workers ++ children ++ es_workers, strategy: :one_for_one)
+    async_workers = [
+      Honeydew.queue_spec(:elasticsearch, failure_mode: Honeydew.FailureMode.Retry),
+      Honeydew.worker_spec(:elasticsearch, {EmqEsStorage.Elasticsearch, []}, num: 5, init_retry_secs: 10)
+    ]
+
+    supervise(
+      workers ++
+      children ++
+      es_workers ++
+      async_workers,
+      strategy: :one_for_one
+    )
   end
 end

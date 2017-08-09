@@ -1,5 +1,6 @@
 defmodule EmqEsStorage.Elasticsearch do
-  use Que.Worker
+  require Logger
+
   use HTTPoison.Base
   require Poison
 

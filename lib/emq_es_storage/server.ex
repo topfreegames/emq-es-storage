@@ -1,6 +1,6 @@
 defmodule EmqEsStorage.Server do
   use GenServer
-  require Que
+  require EmqEsStorage.Elasticsearch
 
   @doc """
   Starts the registry.
@@ -37,7 +37,7 @@ defmodule EmqEsStorage.Server do
   end
 
   def handle_call({:store_on_es, topic, payload}, _from, state) do
-    Que.add(EmqEsStorage.Elasticsearch, es_document(topic, payload))
+    {:perform, [es_document(topic, payload)]} |> Honeydew.async(:elasticsearch, reply: false)
     {:reply, :ok, state}
   end
 

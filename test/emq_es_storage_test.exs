@@ -8,7 +8,6 @@ defmodule EmqEsStorageTest do
     {:ok, _} = Cachex.Application.start(nil, nil)
     :emqttd_hooks.start_link()
     {:ok, _} = EmqEsStorage.start(nil, nil)
-    {:ok, _} = Que.start(nil, nil)
     EmqEsStorage.Elasticsearch.put("/chat-#{Date.utc_today}")
     :ok
   end
@@ -37,6 +36,7 @@ defmodule EmqEsStorageTest do
   test "when $SYS topics should not write to ES" do
     sys_message = get_message("$SYS/something/important")
     EmqEsStorage.Body.on_message_publish(sys_message, [])
+    :timer.sleep(200)
     refresh_index()
 
     {:ok, result} = EmqEsStorage.Elasticsearch.get(
@@ -48,6 +48,7 @@ defmodule EmqEsStorageTest do
   test "when topic from matched topic, should store on ES" do
     message = get_message("chat/my_clan/room/my_room")
     EmqEsStorage.Body.on_message_publish(message, [])
+    :timer.sleep(200)
     refresh_index()
 
     {:ok, result} = EmqEsStorage.Elasticsearch.get(
@@ -62,7 +63,7 @@ defmodule EmqEsStorageTest do
     EmqEsStorage.Body.on_message_publish(message, [])
     EmqEsStorage.Body.on_message_publish(message, [])
     EmqEsStorage.Body.on_message_publish(message, [])
-    :timer.sleep(520)
+    :timer.sleep(200)
     refresh_index()
 
     {:ok, result} = EmqEsStorage.Elasticsearch.get(
@@ -75,7 +76,7 @@ defmodule EmqEsStorageTest do
   test "when topic from not matched topic, should not store on ES" do
     message = get_message("not/matched_topic")
     EmqEsStorage.Body.on_message_publish(message, [])
-
+    :timer.sleep(200)
     refresh_index()
 
     {:ok, result} = EmqEsStorage.Elasticsearch.get(
@@ -90,6 +91,7 @@ defmodule EmqEsStorageTest do
     Cachex.set!(:topic_cache, "emqtt-topic-filter", [topic])
     message = get_message("now/matched/topic")
     EmqEsStorage.Body.on_message_publish(message, [])
+    :timer.sleep(200)
     refresh_index()
 
     {:ok, result} = EmqEsStorage.Elasticsearch.get(
@@ -104,6 +106,7 @@ defmodule EmqEsStorageTest do
     message = get_message(topic)
     EmqEsStorage.Redis.command(["DEL", "emqtt-topic-filter"])
     EmqEsStorage.Body.on_message_publish(message, [])
+    :timer.sleep(200)
     refresh_index()
 
     {:ok, result} = EmqEsStorage.Elasticsearch.get(
