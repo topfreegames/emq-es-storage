@@ -11,8 +11,10 @@ defmodule EmqEsStorage.Elasticsearch do
   end
 
   def perform({index, document}) do
+    uri = "#{index}/message"
+    Logger.info("Request for #{process_url(uri)}")
     index(
-      "#{index}/message",
+      uri,
       document
     )
   end
