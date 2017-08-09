@@ -21,7 +21,7 @@ defmodule EmqEsStorage.Mixfile do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger, :httpoison, :redix, :cachex, :que],
+      extra_applications: [:logger, :httpoison, :redix, :cachex],
       mod: {EmqEsStorage, []}
     ]
   end
