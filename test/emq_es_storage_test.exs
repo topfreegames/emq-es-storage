@@ -8,12 +8,12 @@ defmodule EmqEsStorageTest do
     {:ok, _} = Cachex.Application.start(nil, nil)
     :emqttd_hooks.start_link()
     {:ok, _} = EmqEsStorage.start(nil, nil)
+    {:ok, _} = Que.start(nil, nil)
     EmqEsStorage.Elasticsearch.put("/chat-#{Date.utc_today}")
     :ok
   end
 
   setup do
-    cleanup_state()
     Cachex.clear(:topic_cache)
     EmqEsStorage.Redis.command(
       ["sadd", "emqtt-topic-filter", "chat/+/room/+"]
@@ -34,22 +34,9 @@ defmodule EmqEsStorageTest do
 
   def refresh_index, do: EmqEsStorage.Elasticsearch.post!("/chat-*/_refresh")
 
-  def cleanup_state do
-    for i <- 0..(9) do
-      GenServer.call(:"emq_es_storage_server_#{i}", {:cleanup_state})
-    end
-  end
-
-  def sync_flush do
-    for i <- 0..(9) do
-      GenServer.call(:"emq_es_storage_server_#{i}", {:sync_flush})
-    end
-  end
-
   test "when $SYS topics should not write to ES" do
     sys_message = get_message("$SYS/something/important")
     EmqEsStorage.Body.on_message_publish(sys_message, [])
-    sync_flush()
     refresh_index()
 
     {:ok, result} = EmqEsStorage.Elasticsearch.get(
@@ -61,7 +48,6 @@ defmodule EmqEsStorageTest do
   test "when topic from matched topic, should store on ES" do
     message = get_message("chat/my_clan/room/my_room")
     EmqEsStorage.Body.on_message_publish(message, [])
-    sync_flush()
     refresh_index()
 
     {:ok, result} = EmqEsStorage.Elasticsearch.get(
@@ -90,7 +76,6 @@ defmodule EmqEsStorageTest do
     message = get_message("not/matched_topic")
     EmqEsStorage.Body.on_message_publish(message, [])
 
-    sync_flush()
     refresh_index()
 
     {:ok, result} = EmqEsStorage.Elasticsearch.get(
@@ -105,7 +90,6 @@ defmodule EmqEsStorageTest do
     Cachex.set!(:topic_cache, "emqtt-topic-filter", [topic])
     message = get_message("now/matched/topic")
     EmqEsStorage.Body.on_message_publish(message, [])
-    sync_flush()
     refresh_index()
 
     {:ok, result} = EmqEsStorage.Elasticsearch.get(
@@ -120,7 +104,6 @@ defmodule EmqEsStorageTest do
     message = get_message(topic)
     EmqEsStorage.Redis.command(["DEL", "emqtt-topic-filter"])
     EmqEsStorage.Body.on_message_publish(message, [])
-    sync_flush()
     refresh_index()
 
     {:ok, result} = EmqEsStorage.Elasticsearch.get(

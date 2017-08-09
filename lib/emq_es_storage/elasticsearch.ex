@@ -1,4 +1,5 @@
 defmodule EmqEsStorage.Elasticsearch do
+  use Que.Worker
   use HTTPoison.Base
   require Poison
 
@@ -8,15 +9,20 @@ defmodule EmqEsStorage.Elasticsearch do
     @elasticsearch_url <> url
   end
 
+  def perform({index, document}) do
+    index(
+      "#{index}/message",
+      document
+    )
+  end
+
   def index(url, body) do
-    for document <- body do
-      post(
-        url,
-        Poison.encode!(document),
-        [{"Content-Type", "application/json"}],
-        [hackney: [pool: :es_pool]]
-      )
-    end
+    post(
+      url,
+      Poison.encode!(body),
+      [{"Content-Type", "application/json"}],
+      [hackney: [pool: :es_pool]]
+    )
     :ok
   end
 
