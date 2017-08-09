@@ -18,7 +18,7 @@ defmodule EmqEsStorage.Elasticsearch do
   end
 
   def index(url, body) do
-    post(
+    post!(
       url,
       Poison.encode!(body),
       [{"Content-Type", "application/json"}],
