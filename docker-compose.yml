@@ -12,11 +12,12 @@ services:
       - http.host=0.0.0.0
       - transport.host=127.0.0.1
       - xpack.security.enabled=false
-  emqtt:
-    image: emq
-    ports:
-      - 1883:1883
-    environment:
-      - REDIS_HOST=redis
-      - ES_URI=http://elasticsearch:9200
-      - EMQ_LOADED_PLUGINS=emq_recon emq_modules emq_retainer emq_dashboard emq_es_storage
+  # emqtt:
+  #   image: emq
+  #   ports:
+  #     - 1883:1883
+  #   environment:
+  #     - REDIS_HOST=redis
+  #     - REDIS_AUTH_REDIS_HOST=redis
+  #     - ES_URI=http://elasticsearch:9200
+  #     - EMQ_LOADED_PLUGINS=emq_recon emq_modules emq_retainer emq_dashboard emq_redis_auth emq_es_storage

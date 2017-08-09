@@ -1,9 +1,11 @@
 defmodule EmqEsStorage.Supervisor do
   use Supervisor
+  require HTTPoison
 
   def start_link do
     Supervisor.start_link(__MODULE__, [
-      worker(Cachex, [:topic_cache, [default_ttl: :timer.minutes(5)], []])
+      worker(Cachex, [:topic_cache, [default_ttl: :timer.minutes(5)], []]),
+      :hackney_pool.child_spec(:es_pool, [timeout: 15000, max_connections: 100])
     ])
   end
 
@@ -18,6 +20,16 @@ defmodule EmqEsStorage.Supervisor do
         [name: :"emq_es_storage_redix_#{i}"]
       ], id: {:es_storage_redix, i})
     end
-    supervise(workers ++ children, strategy: :one_for_one)
+
+    es_workers = for i <- 0..(9) do
+      worker(EmqEsStorage.Server, [
+        [name: :"emq_es_storage_server_#{i}"]
+      ], id: {:emq_es_storage_server, i})
+    end
+
+    # :ok = :hackney_pool.start_pool(:es_pool, [timeout: 15000, max_connections: 100])
+    HTTPoison.start()
+
+    supervise(workers ++ children ++ es_workers, strategy: :one_for_one)
   end
 end

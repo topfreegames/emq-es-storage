@@ -2,7 +2,6 @@ defmodule EmqEsStorage.Body do
   require Logger
   require EmqEsStorage.Shared
   import EmqEsStorage.Redis
-  import Tirexs.HTTP
 
   def hook_add(a, b, c) do
     :emqttd_hooks.add(a, b, c)
@@ -19,11 +18,6 @@ defmodule EmqEsStorage.Body do
       [env]
     )
 
-    post!(
-      "/_template/chat_emqtt",
-      File.read!(Path.join(:code.priv_dir(:emq_es_storage), "template.json"))
-    )
-
     :ok
   end
 
@@ -34,16 +28,16 @@ defmodule EmqEsStorage.Body do
     )
   end
 
-  def get_index_chat do
-    "/chat-#{Date.utc_today}"
-  end
-
   def process_message(message, "$SYS/" <> _, _), do: {:ok, message}
 
   def process_message(message, topic, payload) do
     case match_topic?(topic) do
       true ->
-        store_on_es(topic, payload)
+        EmqEsStorage.Server.store_on_es(
+          :"emq_es_storage_server_#{random_index()}",
+          topic,
+          payload
+        )
         {:ok, message}
       false -> {:ok, message}
     end
@@ -82,10 +76,8 @@ defmodule EmqEsStorage.Body do
     |> Regex.compile!
   end
 
-  def store_on_es(topic, payload) do
-    post!(
-      "#{get_index_chat()}/message",
-      [topic: topic, payload: payload, timestamp: DateTime.utc_now |> DateTime.to_iso8601]
-    )
+  defp random_index do
+    rem(System.unique_integer([:positive]), 10)
   end
+
 end

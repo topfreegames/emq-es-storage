@@ -21,7 +21,7 @@ defmodule EmqEsStorage.Mixfile do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger, :tirexs, :redix, :cachex],
+      extra_applications: [:logger, :httpoison, :redix, :cachex],
       mod: {EmqEsStorage, []}
     ]
   end
@@ -29,7 +29,8 @@ defmodule EmqEsStorage.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:tirexs, "~> 0.8"},
+      {:poison, "~> 3.1"},
+      {:httpoison, "~> 0.12"},
       {:redix, ">= 0.0.0"},
       {:cachex, "~> 2.1"},
 
