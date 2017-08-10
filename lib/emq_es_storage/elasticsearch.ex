@@ -4,10 +4,9 @@ defmodule EmqEsStorage.Elasticsearch do
   use HTTPoison.Base
   require Poison
 
-  @elasticsearch_url System.get_env("ES_URI") || "http://localhost:9200"
 
-  def process_url(url) do
-    @elasticsearch_url <> url
+  def process_url(uri) do
+    Application.get_env(:emq_es_storage, :elasticsearch_url) <> uri
   end
 
   def perform({index, document}) do

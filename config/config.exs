@@ -10,7 +10,7 @@ use Mix.Config
 
 # You can configure your application as:
 #
-#     config :emq_es_storage, key: :value
+    config :emq_es_storage, elasticsearch_url: System.get_env("ES_URI") || "http://localhost:9200"
 #
 # and access this configuration in your application as:
 #
