@@ -4,6 +4,8 @@ elixir:
 otp_release:
   - 20.0
 sudo: false
+env:
+  - WAIT_FOR=2000
 services:
   - redis
   - elasticsearch
