@@ -6,7 +6,7 @@ defmodule EmqEsStorage.Elasticsearch do
 
 
   def process_url(uri) do
-    Application.get_env(:emq_es_storage, :elasticsearch_url) <> uri
+    (System.get_env("ES_URI") || "http://localhost:9200") <> uri
   end
 
   def perform({index, document}) do
