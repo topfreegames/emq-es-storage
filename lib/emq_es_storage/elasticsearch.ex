@@ -1,5 +1,4 @@
 defmodule EmqEsStorage.Elasticsearch do
-  require Logger
 
   use HTTPoison.Base
   require Poison
@@ -11,7 +10,6 @@ defmodule EmqEsStorage.Elasticsearch do
 
   def perform({index, document}) do
     uri = "#{index}/message"
-    Logger.debug("Request for #{process_url(uri)}")
     index(
       uri,
       document
